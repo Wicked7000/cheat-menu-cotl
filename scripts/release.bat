@@ -1,6 +1,6 @@
 dotnet build -c RELEASE ../CheatMenu.csproj
-cd "readme"
 dotnet-script ./ReadmeCreator.csx
-move ./cheats.md ../../doc/
-move ./cheatNames.txt ../../doc/
-cd ..
+move ./cheats.md ../doc/
+move ./thunderstoreReadme.md ../doc/
+move ./cheatNames.txt ../doc/
+dotnet-script ./ZipCreator.csx

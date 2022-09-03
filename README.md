@@ -3,7 +3,7 @@
 Provides a list of cheats/utilities in an easily accessible GUI.
 
 ## Features & Usage
-Press the ```M``` key to activate the cheat menu and click on any of the buttons to enable/disable the specific cheats.md
+Press the ```M``` key to activate the cheat menu and click on any of the buttons to enable/disable the specific cheats.md. This key can be changed in the configuration in the ```config``` folder.
 
 To see what cheats/utilities the mod offers see below:
 [Available Cheats](doc/cheats.md)
@@ -37,3 +37,6 @@ To see what cheats/utilities the mod offers see below:
 Feel free to look around the code and modify for personal use, if you want to release a version of your code please reach out to me first!
 
 If you just want to add a specific 'Cheat' to the mode feel free to open a pull request or open an issue.
+
+### Ethics
+Cheats that unlock DLC content or content that is intended to be locked will not be added to this mod.

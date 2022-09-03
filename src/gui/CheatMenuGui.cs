@@ -21,7 +21,7 @@ public class CheatMenuGui {
     [OnGUI]
     private static void OnGUI(){
         if (guiEnabled){
-            windowRect = GUI.Window(0, windowRect, CheatWindow, "Cheat Menu - InsaneWickedTV");
+            windowRect = GUI.Window(0, windowRect, CheatWindow, "Cheat Menu - Wicked");
         }
     }
 
