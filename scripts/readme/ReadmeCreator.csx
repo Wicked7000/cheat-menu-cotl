@@ -12,7 +12,7 @@ if(File.Exists("cheats.md")){
     File.Delete("cheats.md");
 }
 
-if(File.Exists("CheatNames.text")){
+if(File.Exists("CheatNames.txt")){
     File.Delete("CheatNames.txt");
 }
 
@@ -21,9 +21,9 @@ List<MethodInfo> cheatMethods = Definitions.getAllCheatMethods();
 lines.Add("## Available Cheats  \n---  \n");
 
 foreach(MethodInfo cheatMethod in cheatMethods){
-    CheatDetails details = Definitions.HasAttribute<CheatDetails>(cheatMethod);
-    CheatWIP cheatWip = Definitions.HasAttribute<CheatWIP>(cheatMethod);
-    CheatFlag cheatFlag = Definitions.HasAttribute<CheatFlag>(cheatMethod);
+    CheatDetails details = ReflectionHelper.HasAttribute<CheatDetails>(cheatMethod);
+    CheatWIP cheatWip = ReflectionHelper.HasAttribute<CheatWIP>(cheatMethod);
+    CheatFlag cheatFlag = ReflectionHelper.HasAttribute<CheatFlag>(cheatMethod);
 
     if(cheatWip == null){
         //Skip WIP cheats for now

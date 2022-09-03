@@ -2,7 +2,6 @@ AddBlackHeart
 AddBlueHeart
 BuildAllStructures
 ClearBaseRubble
-ClearFaith
 Die
 FollowerDebug
 FPSDebug

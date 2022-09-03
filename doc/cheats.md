@@ -193,14 +193,6 @@
 ---  
 
 
-### **Clear Faith**  
-**Type**: Simple  
-**Description**: Set the current faith to zero  
-
-
----  
-
-
 ### **Auto Clear Ritual Cooldowns**  
 **Type**: Mode  
 **Description**: Set ritual cooldowns to zero while active  
@@ -234,7 +226,7 @@
 
 
 ### **Follower Debug**  
-**Type**: Simple  
+**Type**: Mode  
 **Description**: Shows Follower Debug Information  
 
 
@@ -242,7 +234,7 @@
 
 
 ### **Structure Debug**  
-**Type**: Simple  
+**Type**: Mode  
 **Description**: Shows Structure Debug Information  
 
 
