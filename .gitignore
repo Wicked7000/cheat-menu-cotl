@@ -1,2 +1,5 @@
 /libs/*
 /obj/*
+bin/*
+scripts/*.md
+tools/*

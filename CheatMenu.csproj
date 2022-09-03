@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net46</TargetFramework>
     <AssemblyName>cheat_menu</AssemblyName>
-    <Description>My first plugin</Description>
+    <Description>Cheat/Utility menu for cult of the lamb</Description>
     <Version>1.0.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
@@ -12,7 +12,8 @@
       https://nuget.bepinex.dev/v3/index.json
     </RestoreAdditionalProjectSources>
     <RootNamespace>cheat_menu</RootNamespace>
-    <BaseOutputPath>bin</BaseOutputPath>
+    <OutDir>bin</OutDir>
+    <DebugType>pdbonly</DebugType>
     <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
   </PropertyGroup>
 
@@ -20,6 +21,10 @@
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
+    <PackageReference Include="Mono.pdb2mdb" Version="0.1.0.20130128" />
+    <PackageReference Include="Mono.Unofficial.pdb2mdb" Version="4.2.3.4" />
+    <PackageReference Include="System.Reflection" Version="4.0.0" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.0.0" />
     <PackageReference Include="UnityEngine.Modules" Version="2019.4.40" IncludeAssets="compile" />
   </ItemGroup>
   
@@ -28,12 +33,15 @@
   </ItemGroup>
   
   <ItemGroup>
-	  <Reference Include="MyAssembly">
-		<HintPath>libs/Assembly-CSharp.dll</HintPath>
+	  <Reference Include="CultOfTheLambAssembly">
+		<HintPath>./libs/Assembly-CSharp.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Dis2Msil">
+		<HintPath>./libs/Dis2Msil.dll</HintPath>
 	  </Reference>
   </ItemGroup>
   
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="move /y &quot;Z:\CultOfTheLambModding\mods\zero_cooldowns\bin\Debug\net46\cheat_menu.dll&quot; &quot;Z:\SteamLibrary\steamapps\common\Cult of the Lamb\BepInEx\scripts\cheat_menu.dll&quot;" />
+    <Exec Command="(set CULT_OF_THE_LAMB_PATH=$(CULT_OF_THE_LAMB_PATH)) &amp; call ./scripts/move.bat" />
   </Target>
 </Project>

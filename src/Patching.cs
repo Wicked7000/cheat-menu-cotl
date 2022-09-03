@@ -1,44 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using HarmonyLib;
-using Lamb.UI.FollowerSelect;
-using Lamb.UI;
-using src.Extensions;
 using static cheat_menu.Singleton;
-using System.Collections;
-using UnityEngine;
-using static StructuresData;
 
 namespace cheat_menu;
 
 public class Patching {
     private static Harmony harmonyInstance = null;
 
-    private static Action<bool, NotificationData> maxFaithDelegate = delegate (bool b, NotificationData notif)
-        {
-            if (Instance.IsFlagEnabled(CheatFlags.MaxFaithMode) && CultUtils.GetCurrentFaith() < 85f)
-            {
-                CultUtils.ModifyFaith(85f, "Setting faith to max (MaxFaithMode)", true);
-            }
-        };
-
-public static void PatchAll()
+    [Init]
+    private static void Init()
     {
         harmonyInstance = Harmony.CreateAndPatchAll(typeof(Patching));
-
-        // Patch to allow for max faith mode! 
-        var onUpdateFaith = Traverse.Create(typeof(CultFaithManager)).Field("OnUpdateFaith").GetValue<Action<bool, NotificationData>>();
-        Instance.cultFaithManager.Field("OnUpdateFaith").SetValue(Action.Combine(onUpdateFaith, maxFaithDelegate));
     }
 
-    public static void UnpatchAll()
+    [Unload]
+    private static void UnpatchAll()
     {
         harmonyInstance.UnpatchSelf();
-        var onUpdateFaith = Traverse.Create(typeof(CultFaithManager)).Field("OnUpdateFaith").GetValue<Action<bool, NotificationData>>();
-        Instance.cultFaithManager.Field("OnUpdateFaith").SetValue(Action.Remove(onUpdateFaith, maxFaithDelegate));
     }
 
     [HarmonyPatch(typeof(UpgradeSystem), "AddCooldown")]
