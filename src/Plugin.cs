@@ -1,13 +1,9 @@
-﻿using BepInEx;
-using UnityEngine;
+using BepInEx;
 using System;
-using System.Collections.Generic;
-using System.Reflection;
-using static cheat_menu.Singleton;
 
 namespace cheat_menu;
 
-[BepInPlugin("org.wicked.cheat_menu", "Cheat Menu", "1.0.0")]
+[BepInPlugin("org.wicked.cheat_menu", "Cheat Menu", "1.0.2")]
 public class Plugin : BaseUnityPlugin
 {
     private CheatConfig config;

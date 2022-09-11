@@ -13,7 +13,7 @@ public class CheatMenuGui {
 
     [Init]
     private static void Init(){
-        GUIContent = Definitions.BuildGUIContentFn();         
+        GUIContent = DefinitionManager.BuildGUIContentFn();         
         scrollPosition = Vector2.zero;
         scrollRectPosition = new Rect(5, 20, 490, 493);
     }
@@ -21,7 +21,11 @@ public class CheatMenuGui {
     [OnGUI]
     private static void OnGUI(){
         if (guiEnabled){
-            windowRect = GUI.Window(0, windowRect, CheatWindow, "Cheat Menu - Wicked");
+            string windowTitle = "Cheat Menu - Wicked";
+            if(GUIUtils.IsWithinCategory()){
+                windowTitle = $"{windowTitle} ({GUIUtils.currentCategory.GetCategoryName()})";
+            }
+            windowRect = GUI.Window(0, windowRect, CheatWindow, windowTitle);
         }
     }
 
@@ -93,7 +97,12 @@ public class CheatMenuGui {
             NotificationHandler.CreateNotification("Cheat Menu can only be opened once in game!", 2);
         }
         
-        if(guiEnabled && Input.GetKeyDown(KeyCode.Escape))
+        if(guiEnabled && Input.GetKeyDown(CheatConfig.Instance.backCategory.Value.MainKey) && GUIUtils.currentCategory != CheatCategoryEnum.NONE)
+        {
+            GUIUtils.currentCategory = CheatCategoryEnum.NONE;
+        }
+
+        if(guiEnabled && Input.GetKeyDown(KeyCode.Escape) && CheatConfig.Instance.closeGuiOnEscape.Value)
         {
             guiEnabled = false;
             Singleton.Instance.guiEnabled = guiEnabled;

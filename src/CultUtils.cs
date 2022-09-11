@@ -14,6 +14,12 @@ internal class CultUtils {
         return SaveAndLoad.Loaded;
     }
 
+    public static void PlayNotification(string message){
+        if(NotificationCentre.Instance){
+            NotificationCentre.Instance.PlayGenericNotification(message);
+        }
+    }
+
     public static void AddInventoryItem(InventoryItem.ITEM_TYPE type, int amount){
         Inventory.AddItem(type, amount, false);
     }
@@ -75,14 +81,55 @@ internal class CultUtils {
         cultNameMenuInstance.OnHidden = delegate () { };
     }
 
+    public static void TurnFollowerYoung(FollowerInfo follower){
+        var thisFollower = CultUtils.GetFollowerFromInfo(follower);
+        thisFollower.RemoveCursedState(Thought.OldAge);
+        thisFollower.Brain.ClearThought(Thought.OldAge);
+        follower.Age = 0;
+        follower.OldAge = false;
+        thisFollower.Brain.CheckChangeState();
+        DataManager.Instance.Followers_Elderly_IDs.Remove(follower.ID);        
+        if(thisFollower.Outfit.CurrentOutfit == FollowerOutfitType.Old){
+            thisFollower.SetOutfit(FollowerOutfitType.Follower, false, Thought.None);
+        }
+    }
+
+    public static void TurnFollowerOld(FollowerInfo follower){
+        Follower thisFollower = CultUtils.GetFollowerFromInfo(follower);
+        CultFaithManager.RemoveThought(Thought.OldAge);
+        thisFollower.Brain.ApplyCurseState(Thought.OldAge);
+    }
+
     public static FollowerInfo GetFollowerInfo(Follower follower)
     {
-        return Traverse.Create(follower).Field("_directInfoAccess").GetValue<FollowerInfo>();
+        return follower.Brain._directInfoAccess;
     }
+
+    public static Follower GetFollowerFromInfo(FollowerInfo follower)
+    {
+        return FollowerManager.FindFollowerByID(follower.ID);
+    }
+
 
     public static void SetFollowerIllness(FollowerInfo follower, float value)
     {
         follower.Illness = UnityEngine.Mathf.Clamp(value, 0f, 100f);
+    }
+
+    public static void ClearAllThoughts()
+    {
+        CultFaithManager.Thoughts.Clear();
+        CultFaithManager.GetFaith(0f, 0f, true, NotificationBase.Flair.Positive, "Cleared follower thoughts!", -1);
+    }
+
+    public static void ClearAndAddPositiveFollowerThought()
+    {
+        CultFaithManager.Thoughts.Clear();
+        foreach(var follower in DataManager.Instance.Followers){
+            CultFaithManager.AddThought(Thought.TestPositive, follower.ID, 999);
+        }
+        ThoughtData data = FollowerThoughts.GetData(Thought.TestPositive);
+        CultFaithManager.GetFaith(0f, data.Modifier, true, NotificationBase.Flair.Positive, "Cleared follower thoughts and added positive test thougtht!", -1);
     }
 
     public static void SetFollowerHunger(FollowerInfo follower, float value)
@@ -108,7 +155,8 @@ internal class CultUtils {
         {
             DataManager.Instance.Followers_Dead.Remove(follower);
             DataManager.Instance.Followers_Dead_IDs.Remove(follower.ID);
-            follower.ResetStats();
+
+            Follower revivedFollower = FollowerManager.CreateNewFollower(follower, PlayerFarming.Instance.transform.position, false);
             if (follower.Age > follower.LifeExpectancy)
             {
                 follower.LifeExpectancy = follower.Age + UnityEngine.Random.Range(20, 30);
@@ -117,14 +165,9 @@ internal class CultUtils {
             {
                 follower.LifeExpectancy += UnityEngine.Random.Range(20, 30);
             }
-            Follower revivedFollower = FollowerManager.CreateNewFollower(follower, PlayerFarming.Instance.transform.position, false);
-
-            //Curse all ill followers
+            revivedFollower.Brain.ResetStats();
             FollowerInfo revivedFollowerInfo = GetFollowerInfo(revivedFollower);
-            SetFollowerIllness(revivedFollowerInfo, 0f);
-            SetFollowerHunger(revivedFollowerInfo, 100f);
         }
-
     }
 
     public static void SpawnFollower(FollowerRole role)
@@ -140,7 +183,12 @@ internal class CultUtils {
             follower.Brain.Stats.WorkerBeenGivenOrders = true;
             follower.Brain.CheckChangeTask();
         }
+
+        FollowerInfo newFollowerInfo = GetFollowerInfo(follower);
+        SetFollowerIllness(newFollowerInfo, 0f);
+        SetFollowerHunger(newFollowerInfo, 100f);
     }
+
     public static void ModifyFaith(float value, String notifMessage, bool shouldNotify = true)
     {
         NotificationBase.Flair flair = NotificationBase.Flair.Positive;

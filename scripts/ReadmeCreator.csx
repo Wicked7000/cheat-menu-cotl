@@ -1,63 +1,91 @@
 #r "..\bin\cheat_menu.dll"
+#r "nuget: Newtonsoft.Json, 13.0.1"
+
+using Newtonsoft.Json;
 using cheat_menu;
 using System.Reflection;
 
 //Used for creating a seperate MD file used in the readme
 //to describe all the cheats currently supported by the mod!
 
+#pragma warning disable 0649
+public class Manifest {
+    public string name;
+    public string version_number;
+    public string website_url;
+    public string description;
+    public string[] dependencies;
+}
+#pragma warning restore 0649
+
+public Manifest LoadJsonManifest(){
+    Manifest data;
+    using(StreamReader r = new StreamReader("../manifest.json")){
+        string content = r.ReadToEnd();
+        data = JsonConvert.DeserializeObject<Manifest>(content);
+    }
+    return data;
+}
+
+Manifest data = LoadJsonManifest();
 List<string> cheatTitles = new List<string>();
-List<string> cheatFnNames = new List<string>();
 List<string> lines = new List<string>();
 
-if(File.Exists("cheats.md")){
-    File.Delete("cheats.md");
+if(File.Exists("../doc/cheats.md")){
+    File.Delete("../doc/cheats.md");
 }
 
-if(File.Exists("thunderstoreReadme.md")){
-    File.Delete("thunderstoreReadme.md");
+if(File.Exists("../doc/thunderstoreReadme.md")){
+    File.Delete("../doc/thunderstoreReadme.md");
 }
 
-if(File.Exists("CheatNames.txt")){
-    File.Delete("CheatNames.txt");
-}
 
-List<MethodInfo> cheatMethods = Definitions.getAllCheatMethods();
+List<Definition> cheatMethods = DefinitionManager.GetAllCheatMethods();
+Dictionary<CheatCategoryEnum, List<Definition>> cheatGroups = DefinitionManager.GroupCheatsByCategory(cheatMethods);
 
 lines.Add("## Available Cheats  \n---  \n");
 
-foreach(MethodInfo cheatMethod in cheatMethods){
-    CheatDetails details = ReflectionHelper.HasAttribute<CheatDetails>(cheatMethod);
-    CheatWIP cheatWip = ReflectionHelper.HasAttribute<CheatWIP>(cheatMethod);
-    CheatFlag cheatFlag = ReflectionHelper.HasAttribute<CheatFlag>(cheatMethod);
+foreach(var cheatGroup in cheatGroups){
+    foreach(Definition cheatMethod in cheatGroup.Value){
+        if(!cheatMethod.IsWIPCheat){
+            //Skip WIP cheats for now
 
-    if(cheatWip == null){
-        //Skip WIP cheats for now
+            string type = cheatMethod.IsModeCheat ? "Mode" : "Simple";
 
-        string type = cheatFlag == null ? "Simple" : "Mode";
+            lines.Add($"### **{cheatMethod.Details.Title}**  ");
+            lines.Add($"**Category**: {cheatGroup.Key.GetCategoryName()}  ");
+            lines.Add($"**Type**: {type}  ");
+            lines.Add($"**Description**: {cheatMethod.Details.Description}  ");
+            lines.Add("\n");
+            lines.Add("---  ");
+            lines.Add("\n");
 
-        lines.Add($"### **{details.Title}**  ");
-        lines.Add($"**Type**: {type}  ");
-        lines.Add($"**Description**: {details.Description}  ");
-        lines.Add("\n");
-        lines.Add("---  ");
-        lines.Add("\n");
+            cheatTitles.Add($"- {cheatMethod.Details.Title}");
 
-        cheatTitles.Add($"- {details.Title}");
-        cheatFnNames.Add(cheatMethod.Name);
+        }
     }
 }
 
+//Creates the thunderstore specific readme (md links don't work in thunderstore)
 string readmeOriginal = File.ReadAllText("../README.md");
-List<string> newReadmeFile = new List<string>(readmeOriginal.Split('\n'));
+List<string> newReadmeFile = new List<string>(File.ReadAllLines("../README.md"));
+List<string> changelog = new List<string>(File.ReadAllLines($"../doc/changelogs/{data.version_number}.md"));
+newReadmeFile.InsertRange(9, changelog);
+
 newReadmeFile[7] = "";
 newReadmeFile[8] = "";
 newReadmeFile.InsertRange(7, cheatTitles);
 
-File.WriteAllLines("thunderstoreReadme.md", newReadmeFile);
+File.WriteAllLines("../doc/thunderstoreReadme.md", newReadmeFile);
+
+//Adds the most recent changelog link to the main readme
+List<string> updateMainReadmeFile = new List<string>(File.ReadAllLines("../README.md"));
+updateMainReadmeFile[9] = $"Latest changes: [{data.version_number}](doc/changelogs/{data.version_number}.md)";
+
+if(File.Exists("../README.md")){
+    File.Delete("../README.md");
+    File.WriteAllLines("../README.md", updateMainReadmeFile);
+}
 
 lines.Add("\n[Back to Home](../README.md)");
-
-cheatFnNames.Sort();
-
-File.WriteAllLines("cheats.md", lines);
-File.WriteAllLines("cheatNames.txt", cheatFnNames);
+File.WriteAllLines("../doc/cheats.md", lines);

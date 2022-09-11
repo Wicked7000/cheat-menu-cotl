@@ -1,7 +1,1 @@
-{
-    "name": "CheatMenu",
-    "version_number": "1.0.1",
-    "website_url": "https://github.com/Wicked7000/cheat-menu-cotl",
-    "description": "Provides a list of cheats/utilities in an easily accessible GUI",
-    "dependencies": []
-}
+{"name":"CheatMenu","version_number":"1.0.2","website_url":"https://github.com/Wicked7000/cheat-menu-cotl","description":"Provides a list of cheats/utilities in an easily accessible GUI","dependencies":[]}

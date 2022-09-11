@@ -13,6 +13,17 @@ public static class GUIUtils {
     public static int currentButtonY = 0;
     public static int totalWindowCalculatedHeight = 0;
     public static GUIStyle buttonStyle = null;
+    
+    public static CheatCategoryEnum currentCategory = CheatCategoryEnum.NONE;
+
+    public static bool IsWithinCategory() {
+        return currentCategory != CheatCategoryEnum.NONE;
+    }
+
+    public static bool IsWithinSpecificCategory(string categoryString){
+        var categoryEnum = CheatCategoryEnumExtensions.GetEnumFromName(categoryString);
+        return categoryEnum.Equals(currentCategory);
+    }
 
     [Init]
     private static void Init(){
@@ -138,6 +149,28 @@ public static class GUIUtils {
 
         buttonStyle = styleObj;
         return styleObj;
+    }
+
+    public static bool CategoryButton(string categoryText){
+        var buttonHeight = 50;
+        var btn = GUI.Button(new Rect(0, currentButtonY, 480, buttonHeight), $"{categoryText} >", GetGUIButtonStyle());
+        totalWindowCalculatedHeight += buttonHeight;
+        currentButtonY += buttonHeight;
+        if(btn){
+            currentCategory = CheatCategoryEnumExtensions.GetEnumFromName(categoryText);
+        }
+        return btn;
+    }
+
+    public static bool BackButton(){
+        var buttonHeight = 50;
+        var btn = GUI.Button(new Rect(0, currentButtonY, 480, buttonHeight), $"< Back", GetGUIButtonStyle());
+        totalWindowCalculatedHeight += buttonHeight;
+        currentButtonY += buttonHeight;
+        if(btn){
+            currentCategory = CheatCategoryEnum.NONE;
+        }
+        return btn;
     }
 
     public static bool Button(string buttonText){

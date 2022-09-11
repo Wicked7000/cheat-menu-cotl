@@ -1,12 +1,13 @@
 # cheat-menu-cotl
-
 Provides a list of cheats/utilities in an easily accessible GUI.
 
 ## Features & Usage
-Press the ```M``` key to activate the cheat menu and click on any of the buttons to enable/disable the specific cheats.md. This key can be changed in the configuration in the ```config``` folder.
+Press the ```M``` key to activate the cheat menu and click on any of the buttons to enable/disable the specific cheats or enter that specific cheat cateogry. ```N``` key can be used to go back from a category. Both these keys can be changed in the configuration in the ```config``` folder.
 
 To see what cheats/utilities the mod offers see below:
 [Available Cheats](doc/cheats.md)
+
+Latest changes: [1.0.2](doc/changelogs/1.0.2.md)
 
 ## Installation
 - Make sure you have BepInEx installed ([Guide](https://docs.bepinex.dev/articles/user_guide/installation/index.html))

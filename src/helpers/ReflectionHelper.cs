@@ -1,13 +1,35 @@
 using System.Reflection;
 using System.Reflection.Emit;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace cheat_menu;
 
 public class ReflectionHelper {
+    public static T GetAttributeOfTypeEnum<T>(Enum value){
+        Type enumType = value.GetType();
+        MemberInfo[] memInfo = enumType.GetMember(value.ToString());
+        object[] attributes = memInfo[0].GetCustomAttributes(typeof(T), false);
+        return (attributes.Length > 0) ? (T)attributes[0] : default(T);
+    }
+
+    public static T HasAttribute<T>(Type type) where T : Attribute {
+        return (T)type.GetCustomAttribute(typeof(T));
+    }
+
     public static T HasAttribute<T>(MethodInfo method) where T : Attribute {
         return (T)method.GetCustomAttribute(typeof(T));
+    }
+
+    public static List<Type> GetLoadableTypes(Assembly assembly){
+        try
+        {
+            return assembly.GetTypes().ToList();
+        }
+        catch(ReflectionTypeLoadException e){
+            return e.Types.Where(t => t != null).ToList();
+        }
     }
 
     public static List<MethodInfo> GetAllMethodsInAssemblyWithAnnotation(Type annotationType){
@@ -20,7 +42,7 @@ public class ReflectionHelper {
             MethodInfo[] innerMethodsNonStatic = innerType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance);
             MethodInfo[] combinedInnerMethods = CheatUtils.Concat(innerMethodsNonStatic, innerMethodsStatic);
             foreach(MethodInfo method in combinedInnerMethods){
-                MethodInfo hasAttributeCustom = typeof(ReflectionHelper).GetMethod("HasAttribute")
+                MethodInfo hasAttributeCustom = typeof(ReflectionHelper).GetMethod("HasAttribute", new Type[]{typeof(MethodInfo)})
                              .MakeGenericMethod(new Type[] { annotationType });
                 object returnAttribute = hasAttributeCustom.Invoke(null, new object[]{method});
                 if(returnAttribute != null){
