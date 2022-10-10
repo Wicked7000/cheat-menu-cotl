@@ -11,8 +11,8 @@ Latest changes: [1.0.3](doc/changelogs/1.0.3.md)
 
 ## Installation
 - Make sure you have BepInEx installed ([Guide](https://docs.bepinex.dev/articles/user_guide/installation/index.html))
-- Download the DLL the latest DLL from the releases tab
-- Copy the DLL file to BepInEx/Plugins folder
+- Download the zip from the releases tab
+- Copy the CheatMenu folder to BepInEx/Plugins folder
 - **Important**: Some COTL mods require that the BepInEx configuration has a diferent entrypoint. Download this [file]() and place it in BepInEx/config
 - Start the game and enjoy the mod!
 
