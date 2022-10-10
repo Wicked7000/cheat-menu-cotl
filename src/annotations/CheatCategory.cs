@@ -1,15 +1,15 @@
 using System;
 
-namespace cheat_menu;
+namespace CheatMenu;
 
 public class CheatCategory : Attribute {
-    private CheatCategoryEnum category;
+    private readonly CheatCategoryEnum _category;
 
     public CheatCategory(CheatCategoryEnum enumValue){
-        this.category = enumValue;
+        this._category = enumValue;
     }
 
     public virtual CheatCategoryEnum Category {
-        get {return category;}
+        get {return _category;}
     }
 }

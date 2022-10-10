@@ -1,21 +1,89 @@
 using System.Reflection;
-using System.Reflection.Emit;
+using System.Diagnostics;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using HarmonyLib;
+using UnityAnnotationHelpers;
 
-namespace cheat_menu;
+namespace CheatMenu;
 
-public class ReflectionHelper {
+public static class ReflectionHelper {
+    private class PatchTrackerDetails {
+        public MethodInfo OriginalMethod;
+        public HarmonyPatchType PatchType;
+        
+        public PatchTrackerDetails(MethodInfo originalMethod, HarmonyPatchType patchType){
+            OriginalMethod = originalMethod;
+            PatchType = patchType;
+        }
+    }
+
+    private readonly static string HarmonyId = "com.wicked.cheat_menu";
+    private static Harmony s_harmonyInstance;
+    private static Dictionary<string, PatchTrackerDetails> s_patchTracker;
+
+    [Init]
+    [EnforceOrderFirst(9)]
+    public static void Init(){
+        s_harmonyInstance = new Harmony(HarmonyId);
+        s_patchTracker = new Dictionary<string, PatchTrackerDetails>();
+    }
+
+    [Unload]
+    public static void Unload(){
+        s_harmonyInstance.UnpatchSelf();
+    }
+
+    private static string GetPatchTrackerKey(Type classDef, string methodName){
+        return $"{classDef.Name}-{methodName}";
+    }
+
+    private static string TrackPatch(Type classDef, MethodInfo method, HarmonyPatchType patchType){
+        string patchKey = GetPatchTrackerKey(classDef, method.Name);
+        s_patchTracker[patchKey] = new PatchTrackerDetails(method, patchType);
+        return patchKey;
+    }
+
+    public static MethodBase GetCallingMethod(){
+        return new StackFrame(2).GetMethod();
+    }
+
+    public static MethodBase GetFirstMethodInHierarchyWithAnnotation<T>() where T : Attribute{
+        StackTrace trace = new();
+        StackFrame[] frames = trace.GetFrames();
+        foreach(var frame in frames){
+            UnityEngine.Debug.Log($"frame: {frame.GetMethod().Name}");
+            T attributeValue = HasAttribute<T>(frame.GetMethod());
+            if(attributeValue != null){
+                return frame.GetMethod();
+            }
+        }
+        return null;
+    }
+
+    public static void UnpatchTracked(Type classDef, String methodName){
+        string patchKey = GetPatchTrackerKey(classDef, methodName);
+        if (s_patchTracker.TryGetValue(patchKey, out PatchTrackerDetails patchTrackedDetails))
+        {
+            s_harmonyInstance.Unpatch(patchTrackedDetails.OriginalMethod, patchTrackedDetails.PatchType, HarmonyId);
+            UnityEngine.Debug.Log($"[ReflectionHelper] {classDef.Name}-{methodName} was unpatched to original state.");
+        }
+    }
+
     public static T GetAttributeOfTypeEnum<T>(Enum value){
         Type enumType = value.GetType();
         MemberInfo[] memInfo = enumType.GetMember(value.ToString());
         object[] attributes = memInfo[0].GetCustomAttributes(typeof(T), false);
-        return (attributes.Length > 0) ? (T)attributes[0] : default(T);
+        return (attributes.Length > 0) ? (T)attributes[0] : default;
     }
 
     public static T HasAttribute<T>(Type type) where T : Attribute {
         return (T)type.GetCustomAttribute(typeof(T));
+    }
+
+    public static T HasAttribute<T>(MethodBase method) where T : Attribute {
+        return (T)method.GetCustomAttribute(typeof(T));
     }
 
     public static T HasAttribute<T>(MethodInfo method) where T : Attribute {
@@ -32,9 +100,58 @@ public class ReflectionHelper {
         }
     }
 
+    public static string PatchMethodPrefix(Type classDef, string methodName, MethodInfo patchMethod, BindingFlags flags = BindingFlags.Default, Type[] typeParams = null){
+        if(patchMethod == null){
+            UnityEngine.Debug.Log($"[ReflectionHelper] Can't patch method, passed patchMethod is null!");
+            return null;
+        }
+        
+        MethodInfo methodInfo;        
+        if(typeParams == null){
+            //Without passing any type params
+            methodInfo = classDef.GetMethod(
+                methodName, 
+                flags
+            );
+        } else {
+            methodInfo = classDef.GetMethod(
+                methodName, 
+                flags,
+                Type.DefaultBinder, 
+                typeParams, 
+                null
+            );
+        }
+         
+        if(methodInfo == null){
+            UnityEngine.Debug.LogError($"[ReflectionHelper] Method was not patched, unable to find method info {methodName} (Report To Wicked!)");
+            return null;
+        }
+
+        s_harmonyInstance.Patch(methodInfo, prefix: new HarmonyMethod(patchMethod));
+        UnityEngine.Debug.Log($"[ReflectionHelper] {classDef.Name}-{methodName} was patched with cheat replacement: {patchMethod.Name}");
+        return TrackPatch(classDef, methodInfo, HarmonyPatchType.Prefix);
+    }
+
+    public static MethodInfo GetMethodStaticPublic(string name){   
+        UnityEngine.Debug.Log(GetCallingMethod().DeclaringType);
+        return GetCallingMethod().DeclaringType.GetMethod(name, BindingFlags.Static | BindingFlags.Public);
+    }
+
+    public static MethodInfo GetMethodStaticPublic(Type type, string name){
+        return type.GetMethod(name, BindingFlags.Static | BindingFlags.Public);
+    }
+
+    public static MethodInfo GetMethodStaticPrivate(string name){        
+        return GetCallingMethod().DeclaringType.GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
+    }
+
+    public static MethodInfo GetMethodStaticPrivate(Type type, string name){
+        return type.GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
+    }
+
     public static List<MethodInfo> GetAllMethodsInAssemblyWithAnnotation(Type annotationType){
-        List<MethodInfo> endMethods = new List<MethodInfo>();
-        List<MethodInfo> methods = new List<MethodInfo>();
+        List<MethodInfo> methods = new();
         Type[] executionTypes = Assembly.GetExecutingAssembly().GetTypes();
         
         foreach(Type innerType in executionTypes){
@@ -46,56 +163,11 @@ public class ReflectionHelper {
                              .MakeGenericMethod(new Type[] { annotationType });
                 object returnAttribute = hasAttributeCustom.Invoke(null, new object[]{method});
                 if(returnAttribute != null){
-                    EnforceOrderLast enforceLast = HasAttribute<EnforceOrderLast>(method);
-                    if(enforceLast == null){
-                        methods.Add(method);
-                    } else {
-                        endMethods.Add(method);
-                    }
+                    methods.Add(method);
                 }
             }
         }
-
-        endMethods.Sort(delegate(MethodInfo a, MethodInfo b){
-            return a.Name.CompareTo(b.Name);
-        });
-        methods.AddRange(endMethods);
 
         return methods;
-    }
-
-    public static void InvokeAllWithAnnotation(Type annotationType, object[] parameters = null){
-        List<MethodInfo> methods = ReflectionHelper.GetAllMethodsInAssemblyWithAnnotation(annotationType);
-        foreach(var method in methods){            
-            object[] methodParams = null;
-            if(parameters != null && method.GetParameters().Length > 0){
-                methodParams = new object[method.GetParameters().Length];
-                for(int i = 0; i < method.GetParameters().Length; i++){
-                    methodParams[i]  = parameters[i];
-                }
-            }
-
-            if(method.IsStatic){
-                method.Invoke(null, methodParams);
-            } else {
-                object instance = method.DeclaringType.GetProperty("Instance", BindingFlags.Static | BindingFlags.Public).GetValue(null);
-                method.Invoke(instance, methodParams);
-            }            
-        }
-    }
-
-    public static Action BuildCallAllFunction(Type annotation){
-        DynamicMethod callAllFunction = new DynamicMethod("", typeof(void), new Type[]{});
-        var ilGenerator = callAllFunction.GetILGenerator();
-
-        List<MethodInfo> methods = ReflectionHelper.GetAllMethodsInAssemblyWithAnnotation(annotation);
-        foreach(var defMethod in methods){
-            ilGenerator.EmitCall(OpCodes.Call, defMethod, null); // [] -> [?]
-
-        }
-        ilGenerator.Emit(OpCodes.Ret);
-                        
-        Action delegateFn = (Action)callAllFunction.CreateDelegate(typeof(Action));
-        return delegateFn;
     }
 }

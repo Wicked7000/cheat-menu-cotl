@@ -1,7 +1,5 @@
 using System;
 
-namespace cheat_menu;
+namespace CheatMenu;
 
-public class CheatWIP : Attribute {
-
-}
+public class CheatWIP : Attribute {}

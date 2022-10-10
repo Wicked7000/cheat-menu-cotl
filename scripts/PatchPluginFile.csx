@@ -14,7 +14,7 @@ public class Manifest {
 
 public Manifest LoadJsonManifest(){
     Manifest data;
-    using(StreamReader r = new StreamReader("../manifest.json")){
+    using(StreamReader r = new("../manifest.json")){
         string content = r.ReadToEnd();
         data = JsonConvert.DeserializeObject<Manifest>(content);
     }
@@ -23,7 +23,7 @@ public Manifest LoadJsonManifest(){
 
 if(File.Exists("../src/Plugin.cs")){
     Manifest data = LoadJsonManifest();
-    List<string> pluginLines = new List<string>(File.ReadAllLines("../src/Plugin.cs"));
+    List<string> pluginLines = new(File.ReadAllLines("../src/Plugin.cs"));
     for(int i = 0; i < pluginLines.Count; i += 1){
         if(pluginLines[i].Contains("[BepInPlugin")){
             pluginLines[i] = $"[BepInPlugin(\"org.wicked.cheat_menu\", \"Cheat Menu\", \"{data.version_number}\")]";

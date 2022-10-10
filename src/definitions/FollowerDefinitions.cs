@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using UnityEngine;
-using static cheat_menu.Singleton;
-
-namespace cheat_menu;
+namespace CheatMenu;
 
 [CheatCategory(CheatCategoryEnum.FOLLOWER)]
 public class FollowerDefinitions : IDefinition{
@@ -49,22 +43,53 @@ public class FollowerDefinitions : IDefinition{
         var followers = DataManager.Instance.Followers;
         foreach (var follower in followers)
         {
-            CultUtils.KillFollower(CultUtils.GetFollower(follower), false, false);
+            CultUtils.KillFollower(CultUtils.GetFollower(follower), false);
         }
     }
 
     [CheatDetails("Revive All Followers", "Revive all currently dead followers")]
     public static void ReviveAllFollowers(){
-        var followers = CheatUtils.cloneList(DataManager.Instance.Followers_Dead);
+        var followers = CheatUtils.CloneList(DataManager.Instance.Followers_Dead);
         foreach (var follower in followers)
         {
             CultUtils.ReviveFollower(follower);
         }
     }
 
+    [CheatDetails("Remove Sickness", "Clears sickness from all followers, cleanups any vomit, poop or dead bodies and clears outhouses")]
+    public static void RemoveSickness(){
+        CultUtils.ClearPoop();
+        CultUtils.ClearBodies();
+        CultUtils.ClearVomit();
+        CultUtils.ClearOuthouses();
+        foreach (var follower in DataManager.Instance.Followers)
+        {
+            CultUtils.CureIllness(follower);
+        }
+        CultUtils.PlayNotification("Cured all followers :)");
+    }
+
+    [CheatDetails("Convert Dissenting Followers", "Converts dissenting followers back to regular followers")]
+    public static void ConvertAllDissenting(){
+        foreach (var follower in DataManager.Instance.Followers)
+        {
+            CultUtils.ConvertDissenting(follower);
+        }
+        CultUtils.PlayNotification("Converted all followers :)");
+    }
+
     [CheatDetails("Clear Faith", "Set the current faith to zero")]
     public static void ClearFaith(){
         CultUtils.ModifyFaith(0f, "Cleared faith :)");
+    }
+
+    [CheatDetails("Remove Hunger", "Clears starvation from any followers and maximazes satiation for all followers")]
+    public static void RemoveHunger(){
+        foreach (var follower in DataManager.Instance.Followers)
+        {
+            CultUtils.MaximizeSatiationAndRemoveStarvation(follower);
+        }
+        CultUtils.PlayNotification("Everyone is full! :)");
     }
 
     [CheatDetails("Max Faith", "Clear the cult's thoughts and gives them large positive ones")]

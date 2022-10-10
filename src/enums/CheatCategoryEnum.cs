@@ -1,21 +1,23 @@
-using cheat_menu;
 using System.Reflection;
 using System.Collections.Generic;
 using System;
+using UnityAnnotationHelpers;
+
+namespace CheatMenu;
 
 public static class CheatCategoryEnumExtensions {
-    private static Dictionary<CheatCategoryEnum, string> forwardsCache = new Dictionary<CheatCategoryEnum, string>();
-    private static Dictionary<string, CheatCategoryEnum> backwardsCache = new Dictionary<string, CheatCategoryEnum>();
+    private static Dictionary<CheatCategoryEnum, string> s_forwardsCache = new();
+    private static Dictionary<string, CheatCategoryEnum> s_backwardsCache = new();
 
     [Init]
-    private static void Init(){
-        forwardsCache = new Dictionary<CheatCategoryEnum, string>();
-        backwardsCache = new Dictionary<string, CheatCategoryEnum>();
+    public static void Init(){
+        s_forwardsCache = new Dictionary<CheatCategoryEnum, string>();
+        s_backwardsCache = new Dictionary<string, CheatCategoryEnum>();
     }
 
     public static string GetCategoryName(this CheatCategoryEnum enumValue){
-        string enumName;
-        if(forwardsCache.TryGetValue(enumValue, out enumName)){
+        if (s_forwardsCache.TryGetValue(enumValue, out string enumName))
+        {
             return enumName;
         }
 
@@ -24,13 +26,13 @@ public static class CheatCategoryEnumExtensions {
             throw new Exception("Expected StringEnum on CheatCategory enum but not found!");
         }
 
-        forwardsCache[enumValue] = stringEnumValue.Value;
+        s_forwardsCache[enumValue] = stringEnumValue.Value;
         return stringEnumValue.Value;
     }
 
     public static CheatCategoryEnum GetEnumFromName(string name){
-        CheatCategoryEnum enumValue;
-        if(backwardsCache.TryGetValue(name, out enumValue)){
+        if (s_backwardsCache.TryGetValue(name, out CheatCategoryEnum enumValue))
+        {
             return enumValue;
         }
 
@@ -40,12 +42,12 @@ public static class CheatCategoryEnumExtensions {
             StringEnum stringEnumAnnotation = (StringEnum)member.GetCustomAttribute(typeof(StringEnum));
             if(stringEnumAnnotation != null && stringEnumAnnotation.Value == name){
                 CheatCategoryEnum enumVal = (CheatCategoryEnum)member.GetValue(null);
-                backwardsCache[name] = enumVal;
+                s_backwardsCache[name] = enumVal;
                 return enumVal;
             }
         }
 
-        backwardsCache[name] = CheatCategoryEnum.NONE;
+        s_backwardsCache[name] = CheatCategoryEnum.NONE;
         return CheatCategoryEnum.NONE;
     }
 }

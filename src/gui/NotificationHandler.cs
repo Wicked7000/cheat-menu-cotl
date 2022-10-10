@@ -1,29 +1,27 @@
-using System.Collections.Generic;
 using UnityEngine;
+using UnityAnnotationHelpers;
 
-namespace cheat_menu;
+namespace CheatMenu;
 
 public class NotificationHandler {
 
-    private static string message;    
-    private static float timeToDisplay;    
-    private static float timer;    
+    private static string s_message;    
+    private static float s_timeToDisplay;    
+    private static float s_timer;    
 
-    [OnGUI]
-    private static void OnGUI(){
+    [OnGui]
+    public static void OnGUI(){
         var width = Screen.width / 5;
         var height = Screen.height / 6;
+        Rect sizeAndLocation = GUIUtils.GetCenterRect(width, height);
 
-        var centerX = (Screen.width - width) / 2;
-        var centerY = (Screen.height - height) / 2;
-
-        if(message != null){
-            GUI.Window(2, new Rect(centerX, centerY, width, height), NotificationWindow, "", GUIUtils.GetGUIWindowStyle());
-            timer += UnityEngine.Time.deltaTime;
-            if(timer >= timeToDisplay){
-                message = null;
-                timer = 0f;
-                timeToDisplay = 0f;
+        if(s_message != null){
+            GUI.Window(2, sizeAndLocation, NotificationWindow, "", GUIUtils.GetGUIWindowStyle());
+            s_timer += Time.deltaTime;
+            if(s_timer >= s_timeToDisplay){
+                s_message = null;
+                s_timer = 0f;
+                s_timeToDisplay = 0f;
             }            
         }
     }
@@ -32,12 +30,12 @@ public class NotificationHandler {
         var width = Screen.width / 5;
         var height = Screen.height / 6;
 
-        GUI.Label(new Rect(0, 0, width, height), message, GUIUtils.GetGUILabelStyle(width));
+        GUI.Label(new Rect(0, 0, width, height), s_message, GUIUtils.GetGUILabelStyle(width));
     }
 
     public static void CreateNotification(string message, int displayTimeSeconds){
-        NotificationHandler.message = message;
-        NotificationHandler.timeToDisplay = displayTimeSeconds;
-        NotificationHandler.timer = 0f;
+        s_message = message;
+        s_timeToDisplay = displayTimeSeconds;
+        s_timer = 0f;
     }
 }

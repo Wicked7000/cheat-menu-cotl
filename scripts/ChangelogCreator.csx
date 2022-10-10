@@ -1,7 +1,8 @@
+#r "nuget: Wicked.UnityAnnotationHelpers, 1.0.0"
 #r "..\bin\cheat_menu.dll"
 #r "nuget: Newtonsoft.Json, 13.0.1"
 
-using cheat_menu;
+using CheatMenu;
 using Newtonsoft.Json;
 using System.Linq;
 using System.Reflection;
@@ -18,7 +19,7 @@ public class Manifest {
 
 public Manifest LoadJsonManifest(){
     Manifest data;
-    using(StreamReader r = new StreamReader("../manifest.json")){
+    using(StreamReader r = new("../manifest.json")){
         string content = r.ReadToEnd();
         data = JsonConvert.DeserializeObject<Manifest>(content);
     }
@@ -29,8 +30,8 @@ Manifest manifest = LoadJsonManifest();
 List<string> oldFileLines = File.ReadLines("../doc/old/cheatNames.txt").ToList();
 List<string> newFileLines = File.ReadLines("../doc/cheatNames.txt").ToList();
 
-List<string> changelogFile = new List<string>();
-HashSet<int> oldFoundIndexes = new HashSet<int>();
+List<string> changelogFile = new();
+HashSet<int> oldFoundIndexes = new();
 
 int newIndex = 0;
 int oldIndex = 0;
@@ -43,11 +44,13 @@ changelogFile.Add("#### Cheat Additions/Removal  ");
 List<Definition> cheatMethods = DefinitionManager.GetAllCheatMethods();
 Dictionary<string, Definition> cheatFunctionToDetails = DefinitionManager.CheatFunctionToDetails(cheatMethods);
 
-public void addNewCheat(string fnName){
-    Definition cheatDetails;
-    if(cheatFunctionToDetails.TryGetValue(fnName, out cheatDetails)){
+public void AddNewCheat(string fnName){
+    if (cheatFunctionToDetails.TryGetValue(fnName, out Definition cheatDetails))
+    {
         changelogFile.Add($"- \\+ {cheatDetails.Details.Title}({cheatDetails.CategoryName}), {cheatDetails.Details.Description}");
-    } else {
+    }
+    else
+    {
         throw new Exception("Couldn't find cheat details, mismatch somewhere!");
     }
 }
@@ -64,7 +67,7 @@ while(newIndex < newFileLines.Count || oldIndex < oldFileLines.Count){
     //Reached the end of 'old' file
     else if(oldIndex == oldFileLines.Count){
         //Everything 'left' in the new file is additional things
-        addNewCheat(newFileLines[newIndex]);
+        AddNewCheat(newFileLines[newIndex]);
         newIndex += 1;
     } 
     else {
@@ -88,7 +91,7 @@ while(newIndex < newFileLines.Count || oldIndex < oldFileLines.Count){
             }
 
             if(!itemFound){
-                addNewCheat(newItem);
+                AddNewCheat(newItem);
             }
             newIndex += 1;
         }

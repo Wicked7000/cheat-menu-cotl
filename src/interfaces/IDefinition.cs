@@ -1,4 +1,3 @@
-namespace cheat_menu;
+using CheatMenu;
 
-//Empty interface used for reflection purposes
 public interface IDefinition{}

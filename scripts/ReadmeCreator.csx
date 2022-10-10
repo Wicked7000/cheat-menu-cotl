@@ -1,8 +1,9 @@
+#r "nuget: Wicked.UnityAnnotationHelpers, 1.0.0"
 #r "..\bin\cheat_menu.dll"
 #r "nuget: Newtonsoft.Json, 13.0.1"
 
 using Newtonsoft.Json;
-using cheat_menu;
+using CheatMenu;
 using System.Reflection;
 
 //Used for creating a seperate MD file used in the readme
@@ -20,7 +21,7 @@ public class Manifest {
 
 public Manifest LoadJsonManifest(){
     Manifest data;
-    using(StreamReader r = new StreamReader("../manifest.json")){
+    using(StreamReader r = new("../manifest.json")){
         string content = r.ReadToEnd();
         data = JsonConvert.DeserializeObject<Manifest>(content);
     }
@@ -28,8 +29,8 @@ public Manifest LoadJsonManifest(){
 }
 
 Manifest data = LoadJsonManifest();
-List<string> cheatTitles = new List<string>();
-List<string> lines = new List<string>();
+List<string> cheatTitles = new();
+List<string> lines = new();
 
 if(File.Exists("../doc/cheats.md")){
     File.Delete("../doc/cheats.md");
@@ -68,8 +69,8 @@ foreach(var cheatGroup in cheatGroups){
 
 //Creates the thunderstore specific readme (md links don't work in thunderstore)
 string readmeOriginal = File.ReadAllText("../README.md");
-List<string> newReadmeFile = new List<string>(File.ReadAllLines("../README.md"));
-List<string> changelog = new List<string>(File.ReadAllLines($"../doc/changelogs/{data.version_number}.md"));
+List<string> newReadmeFile = new(File.ReadAllLines("../README.md"));
+List<string> changelog = new(File.ReadAllLines($"../doc/changelogs/{data.version_number}.md"));
 newReadmeFile.InsertRange(9, changelog);
 
 newReadmeFile[7] = "";
@@ -79,7 +80,7 @@ newReadmeFile.InsertRange(7, cheatTitles);
 File.WriteAllLines("../doc/thunderstoreReadme.md", newReadmeFile);
 
 //Adds the most recent changelog link to the main readme
-List<string> updateMainReadmeFile = new List<string>(File.ReadAllLines("../README.md"));
+List<string> updateMainReadmeFile = new(File.ReadAllLines("../README.md"));
 updateMainReadmeFile[9] = $"Latest changes: [{data.version_number}](doc/changelogs/{data.version_number}.md)";
 
 if(File.Exists("../README.md")){

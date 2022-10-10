@@ -1,111 +1,147 @@
 using System;
 using UnityEngine;
+using UnityAnnotationHelpers;
 
-namespace cheat_menu;
+namespace CheatMenu;
 
-public class CheatMenuGui {    
-    private static Action GUIContent = null;    
-    private static bool guiEnabled = false;
-    private static Rect windowRect = new Rect(100, 500, 500, 500);
-    private static Vector2 scrollPosition = Vector2.zero;
-    private static Rect scrollRectPosition = new Rect(0,0,0,0);
-    private static Rect scrollViewRect = new Rect(0, 0, 0, 0);
+public static class CheatMenuGui {    
+    public static bool GuiEnabled = false;
+    public static CheatCategoryEnum CurrentCategory = CheatCategoryEnum.NONE;
+    public static int CurrentButtonY = 0;
+    public static int TotalWindowCalculatedHeight = 0;
+    
+    private static Action s_guiContent;
+    private static GUIUtils.ScrollableWindowParams s_scrollParams = new(
+        "Cheat Menu - Wicked",
+        new(100, 500, 500, 500)
+    );
 
     [Init]
-    private static void Init(){
-        GUIContent = DefinitionManager.BuildGUIContentFn();         
-        scrollPosition = Vector2.zero;
-        scrollRectPosition = new Rect(5, 20, 490, 493);
+    public static void Init(){
+        CurrentButtonY = 0;
+        TotalWindowCalculatedHeight = 0;
+        s_scrollParams = new (
+            "Cheat Menu - Wicked",
+            new(100, 500, 500, 500)
+        );
+        s_guiContent = DefinitionManager.BuildGUIContentFn();
+        CurrentCategory = CheatCategoryEnum.NONE;
     }
     
-    [OnGUI]
-    private static void OnGUI(){
-        if (guiEnabled){
-            string windowTitle = "Cheat Menu - Wicked";
-            if(GUIUtils.IsWithinCategory()){
-                windowTitle = $"{windowTitle} ({GUIUtils.currentCategory.GetCategoryName()})";
+
+    public static bool IsWithinCategory() {
+        return CurrentCategory != CheatCategoryEnum.NONE;
+    }
+
+    public static bool IsWithinSpecificCategory(string categoryString){
+        var categoryEnum = CheatCategoryEnumExtensions.GetEnumFromName(categoryString);
+        return categoryEnum.Equals(CurrentCategory);
+    }
+
+    public static bool CategoryButton(string categoryText){
+        int buttonHeight = GUIUtils.GetButtonHeight();
+        var btn = GUI.Button(new Rect(0, CurrentButtonY, 490, buttonHeight), $"{categoryText} >", GUIUtils.GetGUIButtonStyle());
+        TotalWindowCalculatedHeight += buttonHeight;
+        CurrentButtonY += buttonHeight;
+        if(btn){
+            CurrentCategory = CheatCategoryEnumExtensions.GetEnumFromName(categoryText);
+        }
+        return btn;
+    }
+    
+    public static bool BackButton(){
+        int buttonHeight = GUIUtils.GetButtonHeight();
+        var btn = GUI.Button(new Rect(0, CurrentButtonY, 490, GUIUtils.GetButtonHeight()), $"< Back", GUIUtils.GetGUIButtonStyle());
+        TotalWindowCalculatedHeight += buttonHeight;
+        CurrentButtonY += buttonHeight;
+        if(btn){
+            CurrentCategory = CheatCategoryEnum.NONE;
+        }
+        return btn;
+    }
+
+    public static bool Button(string text) {
+        var btn =  GUIUtils.Button(CurrentButtonY, 490, text);
+        CurrentButtonY += GUIUtils.GetButtonHeight();
+        TotalWindowCalculatedHeight += GUIUtils.GetButtonHeight();
+        return btn;
+    }
+
+    public static bool ButtonWithFlag(string onText, string offText, string flagID){
+        bool flag = FlagManager.IsFlagEnabled(flagID);
+        var btnText = flag ? onText : offText;
+        var btn = GUIUtils.Button(CurrentButtonY, 490, btnText);
+        if (btn)
+        {
+            FlagManager.FlipFlagValue(flagID);
+        }
+        CurrentButtonY += GUIUtils.GetButtonHeight();
+        TotalWindowCalculatedHeight += GUIUtils.GetButtonHeight();
+        return btn;
+    }
+
+    public static bool ButtonWithFlagS(string text, string flagID){
+        return ButtonWithFlag($"{text} (ON)", $"{text} (OFF)", flagID);
+    }
+
+    public static bool ButtonWithFlagP(string text, string flagID){
+        return ButtonWithFlagS(text, flagID);
+    }
+
+    private static void ResetLayoutValues(){
+        CurrentButtonY = 0;
+        TotalWindowCalculatedHeight = 0;
+    }
+
+    [OnGui]
+    public static void OnGUI(){
+        if (GuiEnabled){
+            s_scrollParams.Title = "Cheat Menu - Wicked";
+            if(IsWithinCategory()){
+                s_scrollParams.Title = $"{s_scrollParams.Title} ({CurrentCategory.GetCategoryName()})";
             }
-            windowRect = GUI.Window(0, windowRect, CheatWindow, windowTitle);
+            s_scrollParams = GUIUtils.CustomWindowScrollable(s_scrollParams, CheatWindow);
+        }
+
+        Action[] guiFunctions = GUIManager.GetAllGuiFunctions();
+        if(guiFunctions.Length > 0){
+            foreach(Action guiFn in guiFunctions){
+                guiFn();
+            }
         }
     }
 
-    private static void CheatWindow(int windowID)
+    private static void CheatWindow()
     {
-        //Make titlebar of the window draggable
-        GUI.DragWindow(new Rect(0, 0, 10000, 20));
-
-        scrollPosition = GUI.BeginScrollView(scrollRectPosition, scrollPosition, new Rect(0, 0, 490, GUIUtils.totalWindowCalculatedHeight), false, true);
-        GUIUtils.OnGUI();
-    
-        GUIContent();
-        GUI.EndScrollView();
-
-       /*  
-        Button("Skip Tutorials", delegate
-        {
-            DataManager privateInstance = Traverse.Create(typeof(DataManager)).Field("instance").GetValue<DataManager>();
-
-            DataManager.Instance.AllowSaving = true;
-            DataManager.Instance.EnabledHealing = true;
-            DataManager.Instance.BuildShrineEnabled = true;
-            privateInstance.CookedFirstFood = true;
-            privateInstance.XPEnabled = true;
-            DataManager.Instance.Tutorial_Second_Enter_Base = false;
-            DataManager.Instance.AllowBuilding = true;
-            DataManager.Instance.ShowLoyaltyBars = true;
-            DataManager.Instance.RatExplainDungeon = false;
-            DataManager.Instance.ShowCultFaith = true;
-            DataManager.Instance.ShowCultHunger = true;
-            DataManager.Instance.ShowCultIllness = true;
-            DataManager.Instance.UnlockBaseTeleporter = false;
-            DataManager.Instance.BonesEnabled = false;
-            privateInstance.PauseGameTime = true;
-            privateInstance.ShownDodgeTutorial = true;
-            privateInstance.ShownInventoryTutorial = true;
-            privateInstance.HasEncounteredTarot = true;
-            DataManager.Instance.CurrentGameTime = 244f;
-            DataManager.Instance.HasBuiltShrine1 = false;
-            DataManager.Instance.OnboardedHomeless = false;
-            DataManager.Instance.ForceDoctrineStones = false;
-            DataManager.Instance.Tutorial_First_Indoctoring = true;
-            privateInstance.HadInitialDeathCatConversation = false;
-            privateInstance.PlayerHasBeenGivenHearts = true;
-            privateInstance.BaseGoopDoorLocked = false;
-            privateInstance.InTutorial = false;
-
-            //Skip the indoctrinate phase
-            CultUtils.SpawnFollower(FollowerRole.Worker);
-            Onboarding.Instance.Rat1Indoctrinate.SetActive(false);
-            Onboarding.CurrentPhase = DataManager.OnboardingPhase.Devotion;
-
-            //Name the Cult
-            CultUtils.RenameCult(delegate { DataManager.Instance.OnboardedCultName = true; });
-
-            //Build the shrine
-        });
-        **/
+        s_guiContent();
+        s_scrollParams.ScrollHeight = TotalWindowCalculatedHeight;
+        ResetLayoutValues();
     }
 
     [Update]
-    private static void Update()
-    {        
-        bool keyDown = Input.GetKeyDown(CheatConfig.Instance.guiKeybind.Value.MainKey);
+    public static void Update()
+    {                
+        bool localGuiEnabled = GuiEnabled;
+        bool keyDown = Input.GetKeyDown(CheatConfig.Instance.GuiKeybind.Value.MainKey);
         if(CultUtils.IsInGame() && keyDown){
-            guiEnabled = !guiEnabled;
-            Singleton.Instance.guiEnabled = guiEnabled;
+            GuiEnabled = !GuiEnabled;
         } else if(keyDown) {
             NotificationHandler.CreateNotification("Cheat Menu can only be opened once in game!", 2);
         }
         
-        if(guiEnabled && Input.GetKeyDown(CheatConfig.Instance.backCategory.Value.MainKey) && GUIUtils.currentCategory != CheatCategoryEnum.NONE)
+        if(GuiEnabled && Input.GetKeyDown(CheatConfig.Instance.BackCategory.Value.MainKey) && CurrentCategory!= CheatCategoryEnum.NONE)
         {
-            GUIUtils.currentCategory = CheatCategoryEnum.NONE;
+            CurrentCategory = CheatCategoryEnum.NONE;
+            GUIManager.ClearAllGuiBasedCheats();
         }
 
-        if(guiEnabled && Input.GetKeyDown(KeyCode.Escape) && CheatConfig.Instance.closeGuiOnEscape.Value)
+        if(GuiEnabled && Input.GetKeyDown(KeyCode.Escape) && CheatConfig.Instance.CloseGuiOnEscape.Value)
         {
-            guiEnabled = false;
-            Singleton.Instance.guiEnabled = guiEnabled;
+            GuiEnabled = false;
+        }
+
+        if(localGuiEnabled == true && GuiEnabled == false){
+            GUIManager.ClearAllGuiBasedCheats();
         }
     }
 }

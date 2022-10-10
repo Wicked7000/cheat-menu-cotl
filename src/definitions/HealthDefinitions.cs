@@ -1,15 +1,14 @@
 using UnityEngine;
-using static cheat_menu.Singleton;
+using HarmonyLib;
 
-namespace cheat_menu;
+namespace CheatMenu;
 
 [CheatCategory(CheatCategoryEnum.HEALTH)]
 public class HealthDefinitions : IDefinition{
 
-    [CheatDetails("Godmode", "Gives Invincibility")]
-    [CheatFlag(CheatFlags.GodMode)]
+    [CheatDetails("Godmode", "Gives Invincibility", true)]
     public static void GodMode(){
-        Instance.cheatConsoleInstance.Method("ToggleGodMode").GetValue();
+        Traverse.Create(typeof(CheatConsole)).Method("ToggleGodMode").GetValue();
     }
     
     [CheatDetails("Heal x1", "Heals a Red Heart of the Player")]

@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace cheat_menu;
+namespace CheatMenu;
 
 [CheatCategory(CheatCategoryEnum.WEATHER)]
 public class WeatherDefinitions : IDefinition{

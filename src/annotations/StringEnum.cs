@@ -1,15 +1,15 @@
 using System;
 
-namespace cheat_menu;
+namespace CheatMenu;
 
 public class StringEnum : Attribute {
-    private string value;
+    private readonly string _value;
 
     public StringEnum(string value){
-        this.value = value;
+        this._value = value;
     }
 
     public virtual string Value {
-        get { return value; }
+        get { return _value; }
     }
 }

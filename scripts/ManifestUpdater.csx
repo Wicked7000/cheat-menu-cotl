@@ -1,17 +1,16 @@
 #r "nuget: Newtonsoft.Json, 13.0.1"
 using Newtonsoft.Json;
 
-public bool isNumber(char value){
-    int i = 0;
-    return int.TryParse(value.ToString(), out i);
+public bool IsNumber(char value){
+    return int.TryParse(value.ToString(), out int i);
 }
 
-public string validateAndCollectInput(){
+public string ValidateAndCollectInput(){
     string newVersion = Console.ReadLine();
     int numberOfSections = 0;
     int sectionLength = 0;
     for(var i = 0; i < newVersion.Length; i++){
-        if(isNumber(newVersion[i])){
+        if(IsNumber(newVersion[i])){
             sectionLength += 1;
             continue;
         } else if(newVersion[i] == '.') {
@@ -39,7 +38,7 @@ public class Manifest {
 
 public Manifest LoadJsonManifest(){
     Manifest data;
-    using(StreamReader r = new StreamReader("../manifest.json")){
+    using(StreamReader r = new("../manifest.json")){
         string content = r.ReadToEnd();
         data = JsonConvert.DeserializeObject<Manifest>(content);
     }
@@ -52,21 +51,21 @@ public void SaveManifest(Manifest data){
     File.WriteAllText("../manifest.json", jsonContent);
 }
 
-public void main(){
+public void Main(){
     Manifest data = LoadJsonManifest();
     try {
-        Console.WriteLine("Please enter the new version number in X.X.X format:");
-        string validVersionNumber = validateAndCollectInput();
+        WriteLine("Please enter the new version number in X.X.X format:");
+        string validVersionNumber = ValidateAndCollectInput();
         data.version_number = validVersionNumber;
         SaveManifest(data);
-        Console.WriteLine("Manifest updated!");
+        WriteLine("Manifest updated!");
     } catch(Exception e){
-        Console.WriteLine($"ERROR: {e.Message}");
-        main();
+        WriteLine($"ERROR: {e.Message}");
+        Main();
     }
 }
 
-main();
+Main();
 
 
 

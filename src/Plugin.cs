@@ -1,43 +1,40 @@
 using BepInEx;
 using System;
+using UnityAnnotationHelpers;
 
-namespace cheat_menu;
+namespace CheatMenu;
 
-[BepInPlugin("org.wicked.cheat_menu", "Cheat Menu", "1.0.2")]
+[BepInPlugin("org.wicked.cheat_menu", "Cheat Menu", "1.0.3")]
 public class Plugin : BaseUnityPlugin
-{
-    private CheatConfig config;
-    private Action UpdateFn = null;
-    private Action OnGUIFn = null;
+{    
+    private UnityAnnotationHelper _annotationHelper;
+    private Action _updateFn = null;
+    private Action _onGUIFn = null;
 
-    //Init
-    private void Awake()
+    public void Awake()
     {        
-        config = new CheatConfig(Config);
-        ReflectionHelper.InvokeAllWithAnnotation(typeof(Init));
+        new CheatConfig(Config);
 
-        OnGUIFn = ReflectionHelper.BuildCallAllFunction(typeof(OnGUI));
-        UpdateFn = ReflectionHelper.BuildCallAllFunction(typeof(Update));
+        _annotationHelper = new UnityAnnotationHelper();
+        _annotationHelper.RunAllInit();
+
+        _onGUIFn = _annotationHelper.BuildRunAllOnGuiDelegate();
+        _updateFn = _annotationHelper.BuildRunAllUpdateDelegate();
         UnityEngine.Debug.Log("CheatMenu patching and loading completed!");
     }
 
-    //Unload
-    private void OnDisable()
+    public void OnDisable()
     {
-        Action<UnityEngine.Object> destroyFn = delegate(UnityEngine.Object obj) { Destroy(obj); };
-
-        ReflectionHelper.InvokeAllWithAnnotation(typeof(Unload), new object[]{destroyFn});
+        _annotationHelper.RunAllUnload();
     }
 
-    private void OnGUI()
+    public void OnGUI()
     {
-        //Call all functions with OnGUI
-        OnGUIFn();
+        _onGUIFn();
     }
 
-    private void Update()
+    public void Update()
     {        
-        //Call all function with Update
-        UpdateFn();
+        _updateFn();
     }
 }

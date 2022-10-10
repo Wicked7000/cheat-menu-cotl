@@ -2,15 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using static cheat_menu.Singleton;
+using HarmonyLib;
 
-namespace cheat_menu;
+namespace CheatMenu;
 
 [CheatCategory(CheatCategoryEnum.RESOURCE)]
 public class ResourceDefinitions : IDefinition{
+
+    //TODO: Update this to not use cheatConsole
     [CheatDetails("Give Resources", "Gives 100 of the main primary resources")]
     public static void GiveResources(){
-        Instance.cheatConsoleInstance.Method("GiveResources").GetValue();
+        Traverse.Create(typeof(CheatConsole)).Method("GiveResources").GetValue();
+    }
+
+    [CheatDetails("Give Commandment Stone", "Gives a Commandment Stone")]
+    public static void GiveCommandmentStone(){
+        UnityEngine.Debug.Log("hi");
+        CultUtils.GiveDocterineStone();
     }
 
     [CheatDetails("Give Monster Heart", "Gives a heart of the heretic")]

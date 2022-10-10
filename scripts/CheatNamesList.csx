@@ -1,6 +1,7 @@
+#r "nuget: Wicked.UnityAnnotationHelpers, 1.0.0"
 #r "..\bin\cheat_menu.dll"
 
-using cheat_menu;
+using CheatMenu;
 
 if(File.Exists("../doc/cheatNames.txt")){
     File.Delete("../doc/cheatNames.txt");
@@ -9,7 +10,7 @@ if(File.Exists("../doc/cheatNames.txt")){
 
 List<Definition> cheatMethods = DefinitionManager.GetAllCheatMethods();
 
-List<string> cheatFnNames = new List<string>();
+List<string> cheatFnNames = new();
 
 foreach(var cheatMethod in cheatMethods){
     cheatFnNames.Add(cheatMethod.MethodInfo.Name);

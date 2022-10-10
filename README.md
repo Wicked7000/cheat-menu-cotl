@@ -7,7 +7,7 @@ Press the ```M``` key to activate the cheat menu and click on any of the buttons
 To see what cheats/utilities the mod offers see below:
 [Available Cheats](doc/cheats.md)
 
-Latest changes: [1.0.2](doc/changelogs/1.0.2.md)
+Latest changes: [1.0.3](doc/changelogs/1.0.3.md)
 
 ## Installation
 - Make sure you have BepInEx installed ([Guide](https://docs.bepinex.dev/articles/user_guide/installation/index.html))

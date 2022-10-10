@@ -1,18 +1,13 @@
-﻿using Mono.Collections.Generic;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-namespace cheat_menu;
+namespace CheatMenu;
 
 public static class CheatUtils
 {
     //Will not clone references of the items themselves just the list
-    public static List<T> cloneList<T>(List<T> list)
+    public static List<T> CloneList<T>(List<T> list)
     {
-        List<T> clone = new List<T>();
+        List<T> clone = new();
         foreach(var item in list){
             clone.Add(item);
         }
