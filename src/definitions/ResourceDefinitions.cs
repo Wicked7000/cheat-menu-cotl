@@ -50,6 +50,8 @@ public class ResourceDefinitions : IDefinition{
     [CheatDetails("Give Fertiziler", "Gives x100 Fertiziler (Poop)")]
     public static void GivePoop(){
         CultUtils.AddInventoryItem(InventoryItem.ITEM_TYPE.POOP, 100);
+        CultUtils.AddInventoryItem(InventoryItem.ITEM_TYPE.RAINBOW_POOP, 100);
+        CultUtils.AddInventoryItem(InventoryItem.ITEM_TYPE.GOLD_POOP, 100);
     }
 
     [CheatDetails("Give Follower Meat", "Gives x10 Follower Meat")]
@@ -64,6 +66,9 @@ public class ResourceDefinitions : IDefinition{
         CultUtils.AddInventoryItem(InventoryItem.ITEM_TYPE.Necklace_3, 1);
         CultUtils.AddInventoryItem(InventoryItem.ITEM_TYPE.Necklace_4, 1);
         CultUtils.AddInventoryItem(InventoryItem.ITEM_TYPE.Necklace_5, 1);
+        CultUtils.AddInventoryItem(InventoryItem.ITEM_TYPE.Necklace_6, 1);
+        CultUtils.AddInventoryItem(InventoryItem.ITEM_TYPE.Necklace_7, 1);
+        CultUtils.AddInventoryItem(InventoryItem.ITEM_TYPE.Necklace_8, 1);
     }
 
     [CheatDetails("Give Small Gift", "Gives you a 'small' gift x10")]
